@@ -235,7 +235,7 @@ class ApiService {
     required String role,
     required String accountId,
   }) async {
-    await _post('/subscribers', body: {
+    await _post('/subscribers', {
       'chat_id': chatId,
       'role': role,
       'account_id': accountId,

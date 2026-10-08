@@ -42,7 +42,7 @@ class AppTheme {
         centerTitle: false,
       ),
       
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: bgTertiary,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -151,4 +151,5 @@ extension ThemeColors on BuildContext {
   Color get loss => AppTheme.primaryRed;
   Color get cardBg => AppTheme.bgTertiary;
   Color get textSec => AppTheme.textSecondary;
+  Color get borderColor => AppTheme.border;
 }

@@ -24,6 +24,7 @@ class AppProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isLoggedIn => _api.isLoggedIn;
+  ApiService get apiService => _api;
   
   DashboardData? get dashboard => _dashboard;
   PositionList? get positions => _positions;

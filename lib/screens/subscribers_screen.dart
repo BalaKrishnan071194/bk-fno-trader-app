@@ -448,7 +448,7 @@ class _AddSubscriberDialogState extends State<AddSubscriberDialog> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                border: Border.all(color: AppTheme.borderColor),
+                border: Border.all(color: AppTheme.border),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: DropdownButtonHideUnderline(
