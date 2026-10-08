@@ -141,6 +141,29 @@ class ApiService {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // Funds
+  // ─────────────────────────────────────────────────────────────────────────
+
+  Future<FundsData> getFunds() async {
+    final response = await _get('/funds');
+    return FundsData.fromJson(response);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Equity Holdings
+  // ─────────────────────────────────────────────────────────────────────────
+
+  Future<EquityHoldingsList> getEquityHoldings() async {
+    final response = await _get('/equity/holdings');
+    return EquityHoldingsList.fromJson(response);
+  }
+
+  Future<EquityHolding> getEquityHolding(String symbol) async {
+    final response = await _get('/equity/holdings/$symbol');
+    return EquityHolding.fromJson(response);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // Positions
   // ─────────────────────────────────────────────────────────────────────────
 

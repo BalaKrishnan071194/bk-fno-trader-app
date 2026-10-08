@@ -28,6 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Consumer<AppProvider>(
       builder: (context, provider, _) {
         final dashboard = provider.dashboard;
+        final funds = provider.funds;
         final positions = provider.positions?.positions ?? [];
 
         return RefreshIndicator(
@@ -56,7 +57,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Summary Cards Grid
+                // Funds Widget (Capital Breakdown)
+                if (funds != null) ...[
+                  FundsWidget(funds: funds),
+                  const SizedBox(height: 12),
+                ],
+
+                // Summary Cards Grid (Today's P&L and Open Positions)
                 if (dashboard != null) ...[
                   Row(
                     children: [
@@ -65,26 +72,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           label: "Today's P&L",
                           value: '${dashboard.todayPnl >= 0 ? "+" : ""}₹${_formatNumber(dashboard.todayPnl)}',
                           isPositive: dashboard.todayPnl >= 0,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: SummaryCard(
-                          label: 'Open Positions',
-                          value: '${dashboard.openPositions}',
-                          isNeutral: true,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SummaryCard(
-                          label: 'Total F&O P&L',
-                          value: '${dashboard.totalPnl >= 0 ? "+" : ""}₹${_formatNumber(dashboard.totalPnl)}',
-                          isPositive: dashboard.totalPnl >= 0,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -107,34 +94,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: AppTheme.bgTertiary,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'NIFTY 50',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppTheme.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              dashboard.niftyPrice.toStringAsFixed(2),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                            const Text(
+                              'NIFTY 50',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppTheme.textSecondary,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(height: 4),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  dashboard.niftyPrice.toStringAsFixed(2),
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${dashboard.niftyChangePct >= 0 ? "+" : ""}${dashboard.niftyChangePct.toStringAsFixed(2)}%',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: dashboard.niftyChangePct >= 0
+                                        ? AppTheme.primaryGreen
+                                        : AppTheme.primaryRed,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        // Connection status moved here
+                        Row(
+                          children: [
+                            Icon(
+                              dashboard.zerodhaConnected
+                                  ? Icons.circle
+                                  : Icons.circle_outlined,
+                              size: 8,
+                              color: dashboard.zerodhaConnected
+                                  ? AppTheme.primaryGreen
+                                  : AppTheme.primaryRed,
+                            ),
+                            const SizedBox(width: 4),
                             Text(
-                              '${dashboard.niftyChangePct >= 0 ? "+" : ""}${dashboard.niftyChangePct.toStringAsFixed(2)}%',
+                              dashboard.zerodhaConnected ? 'Connected' : 'Disconnected',
                               style: TextStyle(
-                                fontSize: 12,
-                                color: dashboard.niftyChangePct >= 0
-                                    ? AppTheme.primaryGreen
+                                fontSize: 11,
+                                color: dashboard.zerodhaConnected
+                                    ? AppTheme.textSecondary
                                     : AppTheme.primaryRed,
                               ),
                             ),
@@ -142,36 +158,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ],
                     ),
-                  ),
-                ],
-
-                // Connection Status
-                if (dashboard != null) ...[
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Icon(
-                        dashboard.zerodhaConnected
-                            ? Icons.circle
-                            : Icons.circle_outlined,
-                        size: 10,
-                        color: dashboard.zerodhaConnected
-                            ? AppTheme.primaryGreen
-                            : AppTheme.primaryRed,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        dashboard.zerodhaConnected
-                            ? 'Zerodha Connected'
-                            : 'Zerodha Disconnected',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: dashboard.zerodhaConnected
-                              ? AppTheme.textSecondary
-                              : AppTheme.primaryRed,
-                        ),
-                      ),
-                    ],
                   ),
                 ],
 

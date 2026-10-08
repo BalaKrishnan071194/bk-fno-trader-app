@@ -1,8 +1,11 @@
 /// App Provider — State management for F&O Trading App
 /// Uses Provider pattern for reactive state updates
+library;
 
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
+import '../theme.dart';
 import 'api_service.dart';
 
 class AppProvider extends ChangeNotifier {
@@ -12,8 +15,16 @@ class AppProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  // Theme
+  bool _isDarkMode = false;
+
+  // Market selector
+  MarketType _selectedMarket = MarketType.fno;
+
   // Data
   DashboardData? _dashboard;
+  FundsData? _funds;
+  EquityHoldingsList? _equityHoldings;
   PositionList? _positions;
   SignalList? _signals;
   PerformanceData? _performance;
@@ -25,8 +36,12 @@ class AppProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isLoggedIn => _api.isLoggedIn;
   ApiService get apiService => _api;
+  MarketType get selectedMarket => _selectedMarket;
+  bool get isDarkMode => _isDarkMode;
   
   DashboardData? get dashboard => _dashboard;
+  FundsData? get funds => _funds;
+  EquityHoldingsList? get equityHoldings => _equityHoldings;
   PositionList? get positions => _positions;
   SignalList? get signals => _signals;
   PerformanceData? get performance => _performance;
@@ -38,10 +53,25 @@ class AppProvider extends ChangeNotifier {
   // ─────────────────────────────────────────────────────────────────────────
 
   Future<void> init() async {
+    // Load theme preference
+    final prefs = await SharedPreferences.getInstance();
+    _isDarkMode = prefs.getBool('isDarkMode') ?? false;
+
     await _api.loadStoredToken();
     if (_api.isLoggedIn) {
       await refreshAll();
     }
+    notifyListeners();
+  }
+
+  /// Toggle theme between light and dark
+  Future<void> toggleTheme() async {
+    _isDarkMode = !_isDarkMode;
+    
+    // Persist preference
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDarkMode', _isDarkMode);
+    
     notifyListeners();
   }
 
@@ -67,9 +97,24 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
+  void setMarket(MarketType market) {
+    if (_selectedMarket != market) {
+      _selectedMarket = market;
+      notifyListeners();
+      // Refresh data for the new market
+      if (market == MarketType.equity) {
+        refreshEquityHoldings();
+      } else if (market == MarketType.fno) {
+        refreshPositions();
+      }
+    }
+  }
+
   Future<void> logout() async {
     await _api.logout();
     _dashboard = null;
+    _funds = null;
+    _equityHoldings = null;
     _positions = null;
     _signals = null;
     _performance = null;
@@ -85,6 +130,7 @@ class AppProvider extends ChangeNotifier {
   Future<void> refreshAll() async {
     await Future.wait([
       refreshDashboard(),
+      refreshFunds(),
       refreshPositions(),
     ]);
   }
@@ -95,6 +141,26 @@ class AppProvider extends ChangeNotifier {
       _error = null;
     } catch (e) {
       _error = 'Failed to load dashboard: $e';
+    }
+    notifyListeners();
+  }
+
+  Future<void> refreshFunds() async {
+    try {
+      _funds = await _api.getFunds();
+      _error = null;
+    } catch (e) {
+      // Funds endpoint may not be available — fail silently
+    }
+    notifyListeners();
+  }
+
+  Future<void> refreshEquityHoldings() async {
+    try {
+      _equityHoldings = await _api.getEquityHoldings();
+      _error = null;
+    } catch (e) {
+      _error = 'Failed to load equity holdings: $e';
     }
     notifyListeners();
   }

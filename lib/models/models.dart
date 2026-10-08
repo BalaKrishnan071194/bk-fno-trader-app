@@ -9,8 +9,249 @@ enum SignalType { CALL, PUT }
 
 enum Regime { BULLISH, BEARISH, NEUTRAL }
 
+/// Market segment selector
+enum MarketType {
+  fno,      // F&O Options
+  equity,   // Indian Equity (Stocks)
+  us,       // US Stocks (future)
+}
+
+extension MarketTypeExtension on MarketType {
+  String get displayName {
+    switch (this) {
+      case MarketType.fno:
+        return 'F&O';
+      case MarketType.equity:
+        return 'Equity';
+      case MarketType.us:
+        return 'US Stocks';
+    }
+  }
+  
+  String get flag {
+    switch (this) {
+      case MarketType.fno:
+      case MarketType.equity:
+        return '🇮🇳';
+      case MarketType.us:
+        return '🇺🇸';
+    }
+  }
+  
+  String get fullName => '$flag $displayName';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Funds
+// ─────────────────────────────────────────────────────────────────────────────
+
+class EquityFunds {
+  final double totalInvested;
+  final double currentValue;
+  final double unrealizedPnl;
+  final double unrealizedPnlPct;
+  final double realizedPnl;
+  final int holdingsCount;
+
+  EquityFunds({
+    required this.totalInvested,
+    required this.currentValue,
+    required this.unrealizedPnl,
+    required this.unrealizedPnlPct,
+    required this.realizedPnl,
+    required this.holdingsCount,
+  });
+
+  factory EquityFunds.fromJson(Map<String, dynamic> json) {
+    return EquityFunds(
+      totalInvested: (json['total_invested'] as num).toDouble(),
+      currentValue: (json['current_value'] as num).toDouble(),
+      unrealizedPnl: (json['unrealized_pnl'] as num).toDouble(),
+      unrealizedPnlPct: (json['unrealized_pnl_pct'] as num?)?.toDouble() ?? 0.0,
+      realizedPnl: (json['realized_pnl'] as num?)?.toDouble() ?? 0.0,
+      holdingsCount: json['holdings_count'] as int,
+    );
+  }
+}
+
+class FnoFunds {
+  final double capitalDeployed;
+  final double unrealizedPnl;
+  final double unrealizedPnlPct;
+  final double realizedPnl;
+  final int openPositions;
+
+  FnoFunds({
+    required this.capitalDeployed,
+    required this.unrealizedPnl,
+    required this.unrealizedPnlPct,
+    required this.realizedPnl,
+    required this.openPositions,
+  });
+
+  factory FnoFunds.fromJson(Map<String, dynamic> json) {
+    return FnoFunds(
+      capitalDeployed: (json['capital_deployed'] as num).toDouble(),
+      unrealizedPnl: (json['unrealized_pnl'] as num).toDouble(),
+      unrealizedPnlPct: (json['unrealized_pnl_pct'] as num?)?.toDouble() ?? 0.0,
+      realizedPnl: (json['realized_pnl'] as num?)?.toDouble() ?? 0.0,
+      openPositions: json['open_positions'] as int,
+    );
+  }
+}
+
+class FundsData {
+  final double totalCapital;
+  final double availableCash;
+  final double collateral;
+  final EquityFunds equity;
+  final FnoFunds fno;
+  final double totalUnrealizedPnl;
+  final double totalRealizedPnl;
+  final double totalPnl;
+  final bool zerodhaConnected;
+  final DateTime? lastUpdated;
+
+  FundsData({
+    required this.totalCapital,
+    required this.availableCash,
+    required this.collateral,
+    required this.equity,
+    required this.fno,
+    required this.totalUnrealizedPnl,
+    required this.totalRealizedPnl,
+    required this.totalPnl,
+    required this.zerodhaConnected,
+    this.lastUpdated,
+  });
+
+  factory FundsData.fromJson(Map<String, dynamic> json) {
+    return FundsData(
+      totalCapital: (json['total_capital'] as num).toDouble(),
+      availableCash: (json['available_cash'] as num).toDouble(),
+      collateral: (json['collateral'] as num?)?.toDouble() ?? 0.0,
+      equity: EquityFunds.fromJson(json['equity']),
+      fno: FnoFunds.fromJson(json['fno']),
+      totalUnrealizedPnl: (json['total_unrealized_pnl'] as num?)?.toDouble() ?? 0.0,
+      totalRealizedPnl: (json['total_realized_pnl'] as num?)?.toDouble() ?? 0.0,
+      totalPnl: (json['total_pnl'] as num).toDouble(),
+      zerodhaConnected: json['zerodha_connected'] as bool? ?? false,
+      lastUpdated: json['last_updated'] != null
+          ? DateTime.parse(json['last_updated'])
+          : null,
+    );
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Dashboard
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Equity Holdings (Stocks)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class EquityHolding {
+  final String symbol;
+  final String tradingsymbol;
+  final String exchange;
+  final String isin;
+  final int quantity;
+  final double averagePrice;
+  final double lastPrice;
+  final double closePrice;
+  final double pnl;
+  final double pnlPct;
+  final double dayChange;
+  final double dayChangePct;
+  final double investedValue;
+  final double currentValue;
+  final int t1Quantity;
+  final int collateralQuantity;
+  final String? collateralType;
+
+  EquityHolding({
+    required this.symbol,
+    required this.tradingsymbol,
+    required this.exchange,
+    required this.isin,
+    required this.quantity,
+    required this.averagePrice,
+    required this.lastPrice,
+    required this.closePrice,
+    required this.pnl,
+    required this.pnlPct,
+    required this.dayChange,
+    required this.dayChangePct,
+    required this.investedValue,
+    required this.currentValue,
+    this.t1Quantity = 0,
+    this.collateralQuantity = 0,
+    this.collateralType,
+  });
+
+  factory EquityHolding.fromJson(Map<String, dynamic> json) {
+    return EquityHolding(
+      symbol: json['symbol'] as String,
+      tradingsymbol: json['tradingsymbol'] as String,
+      exchange: json['exchange'] as String? ?? 'NSE',
+      isin: json['isin'] as String? ?? '',
+      quantity: json['quantity'] as int,
+      averagePrice: (json['average_price'] as num).toDouble(),
+      lastPrice: (json['last_price'] as num).toDouble(),
+      closePrice: (json['close_price'] as num).toDouble(),
+      pnl: (json['pnl'] as num).toDouble(),
+      pnlPct: (json['pnl_pct'] as num).toDouble(),
+      dayChange: (json['day_change'] as num).toDouble(),
+      dayChangePct: (json['day_change_pct'] as num).toDouble(),
+      investedValue: (json['invested_value'] as num).toDouble(),
+      currentValue: (json['current_value'] as num).toDouble(),
+      t1Quantity: json['t1_quantity'] as int? ?? 0,
+      collateralQuantity: json['collateral_quantity'] as int? ?? 0,
+      collateralType: json['collateral_type'] as String?,
+    );
+  }
+
+  bool get isProfit => pnl >= 0;
+  bool get isDayPositive => dayChange >= 0;
+}
+
+class EquityHoldingsList {
+  final List<EquityHolding> holdings;
+  final double totalInvested;
+  final double totalCurrent;
+  final double totalPnl;
+  final double totalPnlPct;
+  final double totalDayChange;
+  final int holdingsCount;
+
+  EquityHoldingsList({
+    required this.holdings,
+    required this.totalInvested,
+    required this.totalCurrent,
+    required this.totalPnl,
+    required this.totalPnlPct,
+    required this.totalDayChange,
+    required this.holdingsCount,
+  });
+
+  factory EquityHoldingsList.fromJson(Map<String, dynamic> json) {
+    return EquityHoldingsList(
+      holdings: (json['holdings'] as List)
+          .map((h) => EquityHolding.fromJson(h))
+          .toList(),
+      totalInvested: (json['total_invested'] as num).toDouble(),
+      totalCurrent: (json['total_current'] as num).toDouble(),
+      totalPnl: (json['total_pnl'] as num).toDouble(),
+      totalPnlPct: (json['total_pnl_pct'] as num).toDouble(),
+      totalDayChange: (json['total_day_change'] as num).toDouble(),
+      holdingsCount: json['holdings_count'] as int,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dashboard Data
 // ─────────────────────────────────────────────────────────────────────────────
 
 class DashboardData {
