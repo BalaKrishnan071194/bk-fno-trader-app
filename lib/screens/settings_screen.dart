@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../services/app_provider.dart';
 import '../theme.dart';
 import 'subscribers_screen.dart';
+import 'app_control_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -156,6 +157,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const SubscribersScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ]),
+
+              const SizedBox(height: 16),
+
+              // App Control Section
+              _buildSectionTitle('System Control'),
+              _buildSettingsCard([
+                ListTile(
+                  leading: const Icon(Icons.power_settings_new, color: AppTheme.textSecondary),
+                  title: const Text('Trading App Control'),
+                  subtitle: const Text('Start/Stop India & F&O trading loops'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AppControlScreen(),
                       ),
                     );
                   },

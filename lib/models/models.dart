@@ -679,3 +679,120 @@ class Settings {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// App Control (Trading Loop Status)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Status of a single trading app (India or F&O)
+class AppStatus {
+  final String app;
+  final bool running;
+  final int? pid;
+  final String message;
+  final bool inSchedule;
+
+  AppStatus({
+    required this.app,
+    required this.running,
+    this.pid,
+    required this.message,
+    this.inSchedule = false,
+  });
+
+  factory AppStatus.fromJson(Map<String, dynamic> json) {
+    return AppStatus(
+      app: json['app'] as String,
+      running: json['running'] as bool,
+      pid: json['pid'] as int?,
+      message: json['message'] as String,
+      inSchedule: json['in_schedule'] as bool? ?? false,
+    );
+  }
+
+  /// User-friendly status text
+  String get statusText => running ? 'Running' : 'Stopped';
+  
+  /// Status color indicator
+  bool get isHealthy => running;
+}
+
+/// Combined status of all trading apps
+class AppsStatus {
+  final AppStatus india;
+  final AppStatus fno;
+  final ScheduleInfo schedule;
+  final DateTime timestamp;
+
+  AppsStatus({
+    required this.india,
+    required this.fno,
+    required this.schedule,
+    required this.timestamp,
+  });
+
+  factory AppsStatus.fromJson(Map<String, dynamic> json) {
+    return AppsStatus(
+      india: AppStatus.fromJson(json['india']),
+      fno: AppStatus.fromJson(json['fno']),
+      schedule: ScheduleInfo.fromJson(json['schedule']),
+      timestamp: DateTime.parse(json['timestamp']),
+    );
+  }
+
+  /// True if both apps are running
+  bool get allRunning => india.running && fno.running;
+  
+  /// True if any app is running
+  bool get anyRunning => india.running || fno.running;
+}
+
+/// Trading schedule information
+class ScheduleInfo {
+  final bool inSchedule;
+  final String start;
+  final String stop;
+
+  ScheduleInfo({
+    required this.inSchedule,
+    required this.start,
+    required this.stop,
+  });
+
+  factory ScheduleInfo.fromJson(Map<String, dynamic> json) {
+    return ScheduleInfo(
+      inSchedule: json['in_schedule'] as bool,
+      start: json['start'] as String,
+      stop: json['stop'] as String,
+    );
+  }
+
+  String get scheduleText => '$start – $stop IST';
+}
+
+/// Result of app start/stop operation
+class AppControlResult {
+  final bool success;
+  final String message;
+  final String app;
+  final bool running;
+  final int? pid;
+
+  AppControlResult({
+    required this.success,
+    required this.message,
+    required this.app,
+    required this.running,
+    this.pid,
+  });
+
+  factory AppControlResult.fromJson(Map<String, dynamic> json) {
+    return AppControlResult(
+      success: json['success'] as bool,
+      message: json['message'] as String,
+      app: json['app'] as String,
+      running: json['running'] as bool,
+      pid: json['pid'] as int?,
+    );
+  }
+}

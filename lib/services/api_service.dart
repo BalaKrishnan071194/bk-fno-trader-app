@@ -280,4 +280,50 @@ class ApiService {
   Future<void> removeSubscriber(String chatId) async {
     await _delete('/subscribers/$chatId');
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // App Control (Start/Stop Trading Loops)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /// Get combined status of all trading apps
+  Future<AppsStatus> getAppsStatus() async {
+    final response = await _get('/apps/status');
+    return AppsStatus.fromJson(response);
+  }
+
+  /// Get India (equity swing) trading loop status
+  Future<AppStatus> getIndiaStatus() async {
+    final response = await _get('/apps/india/status');
+    return AppStatus.fromJson(response);
+  }
+
+  /// Start India (equity swing) trading loop
+  Future<AppControlResult> startIndiaApp() async {
+    final response = await _post('/apps/india/start');
+    return AppControlResult.fromJson(response);
+  }
+
+  /// Stop India (equity swing) trading loop
+  Future<AppControlResult> stopIndiaApp() async {
+    final response = await _post('/apps/india/stop');
+    return AppControlResult.fromJson(response);
+  }
+
+  /// Get F&O trading loop status
+  Future<AppStatus> getFnoAppStatus() async {
+    final response = await _get('/apps/fno/status');
+    return AppStatus.fromJson(response);
+  }
+
+  /// Start F&O trading loop
+  Future<AppControlResult> startFnoApp() async {
+    final response = await _post('/apps/fno/start');
+    return AppControlResult.fromJson(response);
+  }
+
+  /// Stop F&O trading loop
+  Future<AppControlResult> stopFnoApp() async {
+    final response = await _post('/apps/fno/stop');
+    return AppControlResult.fromJson(response);
+  }
 }
